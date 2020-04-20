@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -70,6 +71,8 @@ func (rc *registryController) repositories(ctx context.Context, staticDir string
 	if err != nil {
 		return fmt.Errorf("getting catalog for %s failed: %v", rc.reg.Domain, err)
 	}
+
+	sort.Slice(repoList, func(i, j int) bool { return repoList[i] < repoList[j] })
 
 	var wg sync.WaitGroup
 	for _, repo := range repoList {
@@ -227,6 +230,8 @@ func (rc *registryController) generateTagsTemplate(ctx context.Context, repo str
 
 		result.Repositories = append(result.Repositories, rp)
 	}
+
+	sort.Slice(result.Repositories, func(i, j int) bool { return result.Repositories[i].Created.After(result.Repositories[j].Created) })
 
 	// Execute the template.
 	var buf bytes.Buffer
